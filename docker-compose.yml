@@ -1,0 +1,42 @@
+services:
+
+  web:
+    build: .
+    container_name: movies_listing_web
+    command: python manage.py runserver 0.0.0.0:9000
+    ports:
+      - "9000:9000"
+    volumes:
+      - .:/app
+    environment:
+      DJANGO_SETTINGS_MODULE: moviesListing.settings
+      DB_NAME: movies_listing
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: db
+      DB_PORT: 5432
+    depends_on:
+      - db
+    networks:
+      - movies_network
+
+  db:
+    image: postgres:16
+    container_name: movies_listing_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: movies_listing
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - movies_network
+
+networks:
+  movies_network:
+
+volumes:
+  postgres_data:
