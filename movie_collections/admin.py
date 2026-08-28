@@ -1,3 +1,7 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import Collection, CollectionMovie, CollectionActivityLog
+
+admin.site.register(Collection)
+admin.site.register(CollectionMovie)
+admin.site.register(CollectionActivityLog)
