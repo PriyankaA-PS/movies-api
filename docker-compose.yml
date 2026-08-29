@@ -35,6 +35,22 @@ services:
     networks:
       - movies_network
 
+  rabbitmq:
+    # Pinned to 3.13, not 4.x: RabbitMQ 4 deprecated the
+    # transient_nonexcl_queues feature that Celery's worker control bus
+    # (pidbox/mingle/gossip) relies on, which breaks `celery worker` on
+    # startup. 3.13 is the last major version without that restriction.
+    image: rabbitmq:3.13-management
+    container_name: movies_listing_rabbitmq
+    ports:
+      - "5672:5672"    # AMQP port - Celery connects here
+      - "15672:15672"  # Management UI - http://localhost:15672 (guest/guest)
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - movies_network
+
 networks:
   movies_network:
 

@@ -39,12 +39,17 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     "rest_framework_simplejwt.token_blacklist",
+    'django_celery_results',
     'accounts',
     'movies',
     'movie_collections',
 
-
 ]
+
+if DEBUG:
+    INSTALLED_APPS += [
+        'debug_toolbar',
+    ]
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -54,6 +59,22 @@ REST_FRAMEWORK = {
     ),
 }
 
+# --- Celery -----------------------------------------------------------
+# Broker: where task *messages* are queued. RabbitMQ, run via
+# `docker compose up -d rabbitmq` (see docker-compose.yml).
+CELERY_BROKER_URL = "amqp://guest:guest@localhost:5672//"
+
+# Result backend: where task *return values/status* are stored so the API
+# can poll AsyncResult(task_id) later. django-celery-results stores them as
+# rows in the Django DB (TaskResult model) instead of needing a second
+# service like Redis just for results.
+CELERY_RESULT_BACKEND = "django-db"
+
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "UTC"  # matches TIME_ZONE below
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -62,6 +83,16 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+if DEBUG:
+    MIDDLEWARE += [
+        'debug_toolbar.middleware.DebugToolbarMiddleware',
+    ]
+
+# Required by django-debug-toolbar to decide whether to display the toolbar.
+INTERNAL_IPS = [
+    '127.0.0.1',
 ]
 
 ROOT_URLCONF = 'moviesListing.urls'
